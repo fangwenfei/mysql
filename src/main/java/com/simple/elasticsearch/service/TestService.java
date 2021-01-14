@@ -17,7 +17,7 @@ import java.util.List;
 public class TestService extends EsService<Topic> {
 
     public List<Topic> test() {
-        esLambdaQuery().notIn(Topic::getId,1,2).delete();
+        esLambdaQuery().notIn(Topic::getId, 1, 2).delete();
         List<Topic> topics = esLambdaQuery().between(Topic::getId, 2, 3).query();
         return topics;
     }
@@ -27,8 +27,7 @@ public class TestService extends EsService<Topic> {
     }
 
     public void delete() {
-        Long[] ids = new Long[]{1L, 2L};
-        deleteBatch(Arrays.asList(ids));
+        esLambdaQuery().eq(Topic::getId, 1).delete();
     }
 
 }
