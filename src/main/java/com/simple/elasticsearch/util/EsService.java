@@ -44,8 +44,6 @@ public abstract class EsService<T> {
 
     private Method getId;
 
-    private static final String get = "get";
-
     protected EsService() {
         Type type = this.getClass().getGenericSuperclass();
         ParameterizedType parameterizedType = (ParameterizedType) type;
@@ -59,7 +57,7 @@ public abstract class EsService<T> {
             if (field.isAnnotationPresent(EsId.class)) {
                 String fieldName = field.getName();
                 String FieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-                String methodName = get + FieldName;
+                String methodName = GFunction.get + FieldName;
                 Method getMethod = null;
                 try {
                     getMethod = this.c.getMethod(methodName, null);

@@ -15,6 +15,10 @@ import java.util.function.Function;
 @FunctionalInterface
 public interface GFunction<T, R> extends Function<T, R>, Serializable {
 
+    String get = "get";
+
+    String is = "is";
+
     @SneakyThrows
     private SerializedLambda getSerializedLambda() {
         Method write = this.getClass().getDeclaredMethod("writeReplace");
@@ -29,9 +33,9 @@ public interface GFunction<T, R> extends Function<T, R>, Serializable {
     }
 
     private String resolveFieldName(String getMethodName) {
-        if (getMethodName.startsWith("get")) {
+        if (getMethodName.startsWith(get)) {
             getMethodName = getMethodName.substring(3);
-        } else if (getMethodName.startsWith("is")) {
+        } else if (getMethodName.startsWith(is)) {
             getMethodName = getMethodName.substring(2);
         }
         getMethodName = getMethodName.substring(0, 1).toLowerCase() + getMethodName.substring(1);
