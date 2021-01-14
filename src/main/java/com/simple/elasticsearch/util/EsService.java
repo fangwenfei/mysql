@@ -24,7 +24,6 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.elasticsearch.annotations.Document;
 
-import java.io.*;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +33,7 @@ import java.util.List;
  * @version 1.0
  * @date 2021/1/14 10:47
  */
-public abstract class EsService<T> implements Serializable {
+public abstract class EsService<T> {
 
     @Autowired
     private RestHighLevelClient client;
