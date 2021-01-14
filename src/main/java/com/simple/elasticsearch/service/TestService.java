@@ -5,7 +5,6 @@ import com.simple.elasticsearch.util.EsService;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
