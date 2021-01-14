@@ -1,6 +1,5 @@
 package com.simple.elasticsearch.entity;
 
-
 import com.simple.elasticsearch.annotation.EsId;
 import lombok.Data;
 import org.springframework.data.elasticsearch.annotations.Document;
