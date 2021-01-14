@@ -303,16 +303,11 @@ public abstract class EsService<T> {
         }
 
         public List<T> query() {
-            List<T> data = search(this.searchSourceBuilder);
-            this.searchSourceBuilder = new SearchSourceBuilder();
-            this.boolQueryBuilder = new BoolQueryBuilder();
-            return data;
+            return search(this.searchSourceBuilder);
         }
 
         public void delete() {
             deleteByQuery(this.boolQueryBuilder);
-            this.searchSourceBuilder = new SearchSourceBuilder();
-            this.boolQueryBuilder = new BoolQueryBuilder();
         }
 
     }
