@@ -17,6 +17,7 @@ import java.util.List;
 public class TestService extends EsService<Topic> {
 
     public List<Topic> test() {
+        esLambdaQuery().notIn(Topic::getId,1,2).delete();
         List<Topic> topics = esLambdaQuery().between(Topic::getId, 2, 3).query();
         return topics;
     }
