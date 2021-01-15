@@ -3,6 +3,7 @@ package com.simple.elasticsearch.util;
 import com.alibaba.fastjson.JSON;
 import com.simple.elasticsearch.annotation.EsId;
 import com.simple.elasticsearch.function.GFunction;
+import lombok.Data;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -163,7 +164,8 @@ public abstract class EsService<T> {
         return new EsQueryBuilder();
     }
 
-    public class EsQueryBuilder {
+    @Data
+    protected class EsQueryBuilder {
 
         private SearchSourceBuilder searchSourceBuilder;
 
@@ -173,8 +175,8 @@ public abstract class EsService<T> {
             if (this.searchSourceBuilder == null) {
                 this.searchSourceBuilder = new SearchSourceBuilder();
             }
-            if(this.boolQueryBuilder == null){
-                this.boolQueryBuilder = new BoolQueryBuilder();
+            if (this.boolQueryBuilder == null) {
+                this.boolQueryBuilder = QueryBuilders.boolQuery();
             }
         }
 
@@ -187,14 +189,14 @@ public abstract class EsService<T> {
 
         public EsQueryBuilder notEq(GFunction<? extends T, Object> gFunction, Object value) {
             String field = gFunction.field();
-            this.searchSourceBuilder.postFilter(new BoolQueryBuilder().mustNot(QueryBuilders.termQuery(field, value)));
+            this.searchSourceBuilder.postFilter(QueryBuilders.boolQuery().mustNot(QueryBuilders.termQuery(field, value)));
             this.boolQueryBuilder.mustNot(QueryBuilders.termQuery(field, value));
             return this;
         }
 
         public EsQueryBuilder in(GFunction<? extends T, Object> gFunction, Object... values) {
             String field = gFunction.field();
-            BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
             for (Object value : values) {
                 boolQueryBuilder.should(QueryBuilders.termQuery(field, value));
                 this.boolQueryBuilder.should(QueryBuilders.termQuery(field, value));
@@ -205,7 +207,7 @@ public abstract class EsService<T> {
 
         public EsQueryBuilder notIn(GFunction<? extends T, Object> gFunction, Object... values) {
             String field = gFunction.field();
-            BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
             for (Object value : values) {
                 boolQueryBuilder.mustNot(QueryBuilders.termQuery(field, value));
                 this.boolQueryBuilder.mustNot(QueryBuilders.termQuery(field, value));
@@ -216,8 +218,15 @@ public abstract class EsService<T> {
 
         public EsQueryBuilder between(GFunction<? extends T, Object> gFunction, Object begin, Object end) {
             String field = gFunction.field();
-            this.searchSourceBuilder.postFilter(new BoolQueryBuilder().filter(QueryBuilders.rangeQuery(field).from(begin).to(end)));
+            this.searchSourceBuilder.postFilter(QueryBuilders.boolQuery().filter(QueryBuilders.rangeQuery(field).from(begin).to(end)));
             this.boolQueryBuilder.filter(QueryBuilders.rangeQuery(field).from(begin).to(end));
+            return this;
+        }
+
+        public EsQueryBuilder notBetween(GFunction<? extends T, Object> gFunction, Object begin, Object end) {
+            String field = gFunction.field();
+            this.searchSourceBuilder.postFilter(QueryBuilders.boolQuery().mustNot(QueryBuilders.rangeQuery(field).from(begin).to(end)));
+            this.boolQueryBuilder.mustNot(QueryBuilders.rangeQuery(field).from(begin).to(end));
             return this;
         }
 
@@ -261,7 +270,7 @@ public abstract class EsService<T> {
         }
 
         public EsQueryBuilder matchAll(GFunction<? extends T, Object> gFunction, Object... values) {
-            BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
             String field = gFunction.field();
             for (Object value : values) {
                 boolQueryBuilder.filter(QueryBuilders.matchPhrasePrefixQuery(field, value));
@@ -272,13 +281,20 @@ public abstract class EsService<T> {
         }
 
         public EsQueryBuilder matchOne(GFunction<? extends T, Object> gFunction, Object... values) {
-            BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
             String field = gFunction.field();
             for (Object value : values) {
                 boolQueryBuilder.should(QueryBuilders.matchPhrasePrefixQuery(field, value));
                 this.boolQueryBuilder.should(QueryBuilders.matchPhrasePrefixQuery(field, value));
             }
             this.searchSourceBuilder.postFilter(boolQueryBuilder);
+            return this;
+        }
+
+        public EsQueryBuilder notMatch(GFunction<? extends T, Object> gFunction, Object value) {
+            String field = gFunction.field();
+            this.boolQueryBuilder.mustNot(QueryBuilders.matchPhrasePrefixQuery(field, value));
+            this.searchSourceBuilder.postFilter(QueryBuilders.boolQuery().mustNot(QueryBuilders.matchPhrasePrefixQuery(field, value)));
             return this;
         }
 
@@ -293,12 +309,33 @@ public abstract class EsService<T> {
 
         public EsQueryBuilder fuzzyOne(GFunction<? extends T, Object> gFunction, Fuzziness fuzziness, Object... values) {
             String field = gFunction.field();
-            BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
             for (Object value : values) {
                 boolQueryBuilder.should(QueryBuilders.fuzzyQuery(field, value).fuzziness(fuzziness));
                 this.boolQueryBuilder.should(QueryBuilders.fuzzyQuery(field, value).fuzziness(fuzziness));
             }
             this.searchSourceBuilder.postFilter(boolQueryBuilder);
+            return this;
+        }
+
+        public EsQueryBuilder notFuzzy(GFunction<? extends T, Object> gFunction, Fuzziness fuzziness, Object value) {
+            String field = gFunction.field();
+            this.boolQueryBuilder.mustNot(QueryBuilders.fuzzyQuery(field, value).fuzziness(fuzziness));
+            this.searchSourceBuilder.postFilter(QueryBuilders.boolQuery().mustNot(QueryBuilders.fuzzyQuery(field, value).fuzziness(fuzziness)));
+            return this;
+        }
+
+        public EsQueryBuilder isNull(GFunction<? extends T, Object> gFunction) {
+            String field = gFunction.field();
+            this.boolQueryBuilder.filter(QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(field)));
+            this.searchSourceBuilder.postFilter(QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(field)));
+            return this;
+        }
+
+        public EsQueryBuilder isNotNull(GFunction<? extends T, Object> gFunction) {
+            String field = gFunction.field();
+            this.boolQueryBuilder.filter(QueryBuilders.existsQuery(field));
+            this.searchSourceBuilder.postFilter(QueryBuilders.existsQuery(field));
             return this;
         }
 

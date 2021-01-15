@@ -26,7 +26,7 @@ public class TestService extends EsService<Topic> {
     }
 
     public void delete() {
-        esLambdaQuery().eq(Topic::getId, 1).delete();
+        esLambdaQuery().eq(Topic::getId,1).delete();
     }
 
 }
