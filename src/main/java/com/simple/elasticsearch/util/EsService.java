@@ -41,7 +41,7 @@ public abstract class EsService<T> {
 
     private String index;
 
-    private Class<T> c;
+    private Class<T> entity;
 
     private Method getId;
 
@@ -49,11 +49,11 @@ public abstract class EsService<T> {
         Type type = this.getClass().getGenericSuperclass();
         ParameterizedType parameterizedType = (ParameterizedType) type;
         Type[] t = parameterizedType.getActualTypeArguments();
-        this.c = (Class<T>) t[0];
-        if (this.c.isAnnotationPresent(Document.class)) {
-            this.index = this.c.getAnnotation(Document.class).indexName();
+        this.entity = (Class<T>) t[0];
+        if (this.entity.isAnnotationPresent(Document.class)) {
+            this.index = this.entity.getAnnotation(Document.class).indexName();
         }
-        Field[] fields = this.c.getDeclaredFields();
+        Field[] fields = this.entity.getDeclaredFields();
         for (Field field : fields) {
             if (field.isAnnotationPresent(EsId.class)) {
                 String fieldName = field.getName();
@@ -61,7 +61,7 @@ public abstract class EsService<T> {
                 String methodName = GFunction.get + FieldName;
                 Method getMethod = null;
                 try {
-                    getMethod = this.c.getMethod(methodName, null);
+                    getMethod = this.entity.getMethod(methodName, null);
                 } catch (NoSuchMethodException e) {
                     e.printStackTrace();
                 }
@@ -132,7 +132,7 @@ public abstract class EsService<T> {
             SearchHit[] hits = response.getHits().getHits();
             List<T> res = new ArrayList<>(hits.length);
             for (SearchHit hit : hits) {
-                res.add(JSON.parseObject(hit.getSourceAsString(), c));
+                res.add(JSON.parseObject(hit.getSourceAsString(), entity));
             }
             return res;
         } catch (Exception e) {
